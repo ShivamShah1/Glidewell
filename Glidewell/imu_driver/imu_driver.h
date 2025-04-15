@@ -1,7 +1,12 @@
 #ifndef __IMU_DRIVER_H
 #define __IMU_DRIVER_H
 
-#include "main.h"
+#include "stm32f4xx_hal.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "i2c.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 typedef struct {
     float acc_x;

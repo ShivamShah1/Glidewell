@@ -1,7 +1,7 @@
 /*
     this is freeRTOS simulation using STM32x board series with cmsis os
     for collecting 2 sensor data (PPG and IMU via I2C) with a periodicity of 
-    50Hz and 100Hz respectively. The user can connect with the STM board
+    100Hz and 50Hz respectively. The user can connect with the STM board
     with ST's in-built ble, and after connecting to board via ble the user can send
     various commands like to store the sensor datta in the flash memory,
     browse the data and download it. I have also connected 2 led light for 
@@ -64,6 +64,12 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_USART2_UART_Init();
+
+  /* To get the real time */
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  RTC_Init();
 
   /* Init sensor/ble drivers */
   IMU_Init(&hi2c1);
@@ -147,9 +153,9 @@ void StartPPGTask(void *argument) {
 /* BLE Task Initializer -------------------------------------------------------*/
 void StartBLETask(const char *argument) {
     for (;;) {
-        if(BLE_status()){
-            // Call the BLE event processing function that handles BLE events (such as incoming commands, notifications)
-            BLE_ProcessCommand(*argument);  // This function processes BLE events as part of STM32's BLE stack
+        if (ble_connected && command_available) {
+            BLE_ProcessCommand(last_received_command);  // Process the received command
+            command_available = false;  // Clear the flag
         }
 
       // Reset the watchdog timer to prevent system reset
@@ -172,7 +178,8 @@ void StartFlashTask(void *argument) {
               // 2. Get 2 PPG samples (100 Hz)
               if (osMessageQueueGet(ppgQueueHandle, &ppg_data1, 0, 0) == osOK &&
               osMessageQueueGet(ppgQueueHandle, &ppg_data2, 0, 0) == osOK) {
-                  sensor_data.timestamp = HAL_GetTick();  // Assign current timestamp
+                  //sensor_data.timestamp = HAL_GetTick();  // Assign current timestamp
+                  sensor_data.timestamp = Get_Unix_Timestamp_From_RTC();
           
                   // Fill IMU fields
                   sensor_data.acc_x = imu_data.acc_x;

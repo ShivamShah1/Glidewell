@@ -1,7 +1,13 @@
 #ifndef __FLASH_HANDLER_H
 #define __FLASH_HANDLER_H
 
-#include "main.h"
+#include "stm32f4xx_hal.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <time.h>
 
 /* Flash memory settings */
 #define FLASH_START_ADDR  0x08080000  // Start of custom flash sector (check linker script)

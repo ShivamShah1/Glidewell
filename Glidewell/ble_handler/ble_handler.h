@@ -1,9 +1,18 @@
 #ifndef __BLE_HANDLER_H
 #define __BLE_HANDLER_H
 
-#include "main.h"
-#include "FreeRTOS/bluetooth/bluetooth.h"
-#include "FreeRTOS/bluetooth/gatt.h"
+#include "stm32f4xx_hal.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "app_ble.h"
+#include "custom_stm.h"
+#include "custom_app.h"
+#include "app_common.h"
+#include "shci.h"
+#include "flash_handler/flash_handler.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 #define BLE_RX_BUFFER_SIZE  128
 #define BLE_TX_BUFFER_SIZE  128

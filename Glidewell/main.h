@@ -19,6 +19,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 /* Exported constants --------------------------------------------------------*/
 #define IMU_TASK_PERIOD_MS    20    // 50 Hz
@@ -28,6 +29,10 @@ extern "C" {
 #define IMU_QUEUE_SIZE 10
 
 #define WDT_TIMEOUT_MS 1000 // 1 second timeout
+
+#define MAX_BLE_COMMAND_LEN 64
+char last_received_command[MAX_BLE_COMMAND_LEN] = {0};
+volatile bool command_available = false;  // Flag to track if a new command was received
 
 /* Exported macro ------------------------------------------------------------*/
 
@@ -73,6 +78,47 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
     HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
+}
+
+void RTC_Init(void) {
+    hrtc.Instance = RTC;
+    hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+    hrtc.Init.AsynchPrediv = 127;
+    hrtc.Init.SynchPrediv = 255;
+    hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+    if (HAL_RTC_Init(&hrtc) != HAL_OK) {
+        Error_Handler();
+    }
+
+    // Set default time/date only once (or when flash is erased)
+    sTime.Hours = 10;
+    sTime.Minutes = 30;
+    sTime.Seconds = 0;
+    HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+    sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+    sDate.Month = RTC_MONTH_APRIL;
+    sDate.Date = 14;
+    sDate.Year = 25;  // Year = 2025
+    HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+}
+
+uint32_t Get_Unix_Timestamp_From_RTC(void) {
+    RTC_TimeTypeDef sTime;
+    RTC_DateTypeDef sDate;
+    struct tm timeinfo;
+
+    HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);  // Must be called after GetTime!
+
+    timeinfo.tm_year = 2000 + sDate.Year - 1900; // tm_year = years since 1900
+    timeinfo.tm_mon  = sDate.Month - 1;          // tm_mon = 0-11
+    timeinfo.tm_mday = sDate.Date;
+    timeinfo.tm_hour = sTime.Hours;
+    timeinfo.tm_min  = sTime.Minutes;
+    timeinfo.tm_sec  = sTime.Seconds;
+
+    return mktime(&timeinfo);  // UNIX timestamp
 }
 
 /* GPIO Pin Initializer -------------------------------------------------------*/

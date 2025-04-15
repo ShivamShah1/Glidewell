@@ -1,7 +1,12 @@
 #ifndef __ERROR_HANDLER_H
 #define __ERROR_HANDLER_H
 
-#include "main.h"
+#include "stm32f4xx_hal.h"
+#include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "usart.h"
+#include <string.h>
+#include <stdio.h>
 
 /* Optional LED indicator (customize to your board) */
 #define LED1_GPIO_PORT GPIOA
