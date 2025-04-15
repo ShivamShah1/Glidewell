@@ -2,6 +2,7 @@
 
 static uint32_t current_flash_addr = FLASH_START_ADDR;
 
+/* initializing the flash memory for logging */
 bool Flash_Init(void)
 {
     HAL_FLASH_Unlock();
@@ -9,6 +10,7 @@ bool Flash_Init(void)
     return true;
 }
 
+/* erasing the existing sensor memory only */
 bool Flash_EraseAll(void)
 {
     FLASH_EraseInitTypeDef erase;
@@ -31,6 +33,7 @@ bool Flash_EraseAll(void)
     return true;
 }
 
+/* writing to the flash memory */
 bool Flash_WriteData(const SensorData_t *data)
 {
     HAL_FLASH_Unlock();
@@ -50,6 +53,7 @@ bool Flash_WriteData(const SensorData_t *data)
     return true;
 }
 
+/* reading from the flash memory */
 bool Flash_ReadData(uint32_t address, SensorData_t *data_out)
 {
     if (address < FLASH_START_ADDR || address >= FLASH_END_ADDR)
@@ -60,6 +64,7 @@ bool Flash_ReadData(uint32_t address, SensorData_t *data_out)
     return true;
 }
 
+/* get the next available flash space to store the data */
 uint32_t Flash_GetNextAddress(void)
 {
     uint32_t addr = FLASH_START_ADDR;

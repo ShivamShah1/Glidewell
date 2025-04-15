@@ -1,12 +1,15 @@
 #include "imu_driver.h"
 
+/* i2c connection for imu */
 static I2C_HandleTypeDef *imu_i2c = NULL;
 
+/* converting the data to a single int16_t */
 static int16_t ConvertToInt16(uint8_t high, uint8_t low)
 {
     return ((int16_t)high << 8) | low;
 }
 
+/* initialinzing the i2c port for the sensor */
 bool IMU_Init(I2C_HandleTypeDef *hi2c)
 {
     imu_i2c = hi2c;
@@ -20,6 +23,7 @@ bool IMU_Init(I2C_HandleTypeDef *hi2c)
     return true;
 }
 
+/* reading the data from the imu */
 bool IMU_Read(IMU_Data_t *data)
 {
     uint8_t raw_data[14];

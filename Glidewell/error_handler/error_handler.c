@@ -1,6 +1,7 @@
 #include "error_handler.h"
 
-extern UART_HandleTypeDef huart2;  // Or whichever UART you're using for logging
+/* UART port for serial communication if connected */
+extern UART_HandleTypeDef huart2;
 
 void Flash_BlinkBothLEDs(void) {
     for (int i = 0; i < 3; i++) {
@@ -13,6 +14,7 @@ void Flash_BlinkBothLEDs(void) {
     }
 }
 
+/* Error displaying and handling */
 void Handle_Error(const char *source, const char *message) {
     char buffer[128];
     snprintf(buffer, sizeof(buffer), "[ERROR] Source: %s | Message: %s\r\n", source, message);
@@ -35,8 +37,4 @@ void Handle_Error(const char *source, const char *message) {
     else if (strcmp(source, "Flash") == 0) {
         Flash_BlinkBothLEDs();
     }
-
-    // Optional: Freeze for debugging or trigger system reset
-    // while (1); // Uncomment to halt
-    // HAL_NVIC_SystemReset(); // Uncomment to reset
 }

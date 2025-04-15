@@ -25,12 +25,14 @@ void BLE_Task(void *argument)
     }
 }
 
+/* send data to ble connected to uart port */
 void BLE_Send(const char *msg)
 {
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
     HAL_UART_Transmit(&huart1, (uint8_t *)"\r\n", 2, HAL_MAX_DELAY); // Newline for readability
 }
 
+/* process the ble command received */
 void BLE_ProcessCommand(const char *cmd)
 {
     if (strstr(cmd, BLE_CMD_START_LOGGING))
