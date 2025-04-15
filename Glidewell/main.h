@@ -8,6 +8,9 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "usart.h"
+#include "i2c.h"
 #include "imu_driver/imu_driver.h"
 #include "ppg_driver/ppg_driver.h"
 #include "ble_handler/ble_handler.h"

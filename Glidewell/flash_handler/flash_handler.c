@@ -7,6 +7,7 @@ bool Flash_Init(void)
 {
     HAL_FLASH_Unlock();
     current_flash_addr = Flash_GetNextAddress();
+    HAL_FLASH_Lock();
     return true;
 }
 

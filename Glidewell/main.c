@@ -2,8 +2,7 @@
     this is freeRTOS simulation using STM32x board series with cmsis os
     for collecting 2 sensor data (PPG and IMU via I2C) with a periodicity of 
     50Hz and 100Hz respectively. The user can connect with the STM board
-    with ble connection. A nordic ble module is connected to the board via 
-    UART connection, and after connecting to board via ble the user can send
+    with ST's in-built ble, and after connecting to board via ble the user can send
     various commands like to store the sensor datta in the flash memory,
     browse the data and download it. I have also connected 2 led light for 
     visual display is any error occurs and also provided error handling methods.
@@ -69,7 +68,7 @@ int main(void)
   /* Init sensor/ble drivers */
   IMU_Init(&hi2c1);
   PPG_Init(&hi2c1);
-  BLE_Init(&huart2);
+  BLE_Init();  // This initializes the BLE stack and its services
   Flash_Init();
 
   /* Init RTOS */
@@ -146,12 +145,13 @@ void StartPPGTask(void *argument) {
 }
 
 /* BLE Task Initializer -------------------------------------------------------*/
-void StartBLETask(void *argument) {
+void StartBLETask(const char *argument) {
     for (;;) {
-      if (BLE_Process() != HAL_OK) {
-          Handle_Error("BLE", "BLE processing error");
+        if(BLE_status()){
+            // Call the BLE event processing function that handles BLE events (such as incoming commands, notifications)
+            BLE_ProcessCommand(*argument);  // This function processes BLE events as part of STM32's BLE stack
         }
-  
+
       // Reset the watchdog timer to prevent system reset
       HAL_IWDG_Refresh(&hiwdg);
       

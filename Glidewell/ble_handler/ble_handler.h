@@ -2,8 +2,11 @@
 #define __BLE_HANDLER_H
 
 #include "main.h"
+#include "FreeRTOS/bluetooth/bluetooth.h"
+#include "FreeRTOS/bluetooth/gatt.h"
 
-#define BLE_RX_BUFFER_SIZE 128
+#define BLE_RX_BUFFER_SIZE  128
+#define BLE_TX_BUFFER_SIZE  128
 
 /* BLE Commands */
 #define BLE_CMD_START_LOGGING    "START_LOG"
@@ -17,8 +20,7 @@ extern volatile bool logging_enabled;
 
 /* BLE Functions */
 void BLE_Init(void);
-void BLE_Task(void *argument);
-void BLE_Send(const char *msg);
+void BLE_status(void);
 void BLE_ProcessCommand(const char *cmd);
 
 #endif // __BLE_HANDLER_H
