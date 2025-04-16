@@ -10,12 +10,12 @@
 #include "app_common.h"
 #include "shci.h"
 #include "flash_handler/flash_handler.h"
+#include "error_handler/error_handler.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 
-#define BLE_RX_BUFFER_SIZE  128
-#define BLE_TX_BUFFER_SIZE  128
+#define MAX_RETRY 3 // 3 attempts/retry
 
 /* BLE Commands */
 #define BLE_CMD_START_LOGGING    "START_LOG"

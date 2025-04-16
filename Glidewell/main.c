@@ -58,36 +58,36 @@ volatile bool ble_connected = false;
 
 int main(void)
 {
-  /* MCU Configuration */
+  // MCU Configuration
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_USART2_UART_Init();
 
-  /* To get the real time */
+  // To get the real time 
   RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
 
   RTC_Init();
 
-  /* Init sensor/ble drivers */
+  // Init sensor/ble drivers 
   IMU_Init(&hi2c1);
   PPG_Init(&hi2c1);
   BLE_Init();  // This initializes the BLE stack and its services
   Flash_Init();
 
-  /* Init RTOS */
+  // Init RTOS 
   osKernelInitialize();
 
-  /* mutex initializatino for i2c */
+  // mutex initializatino for i2c 
   i2cMutexHandle = osMutexNew(&i2cMutexAttr);
 
-  /* Create message queues */
+  // Create message queues 
   imuQueueHandle = osMessageQueueNew(IMU_QUEUE_SIZE, sizeof(IMU_Data_t), NULL);
   ppgQueueHandle = osMessageQueueNew(PPG_QUEUE_SIZE, sizeof(PPG_Data_t), NULL);
 
-  /* Create tasks */
+  // Create tasks 
   const osThreadAttr_t imuTaskAttr = { .name = "IMUTask", .priority = osPriorityAboveNormal, .stack_size = 512 };
   imuTaskHandle = osThreadNew(StartIMUTask, NULL, &imuTaskAttr);
 
@@ -103,16 +103,27 @@ int main(void)
   osKernelStart();
 }
 
-/* IMU Task Initializer ----------------------------------------------------*/
+/* IMU Task Initializer */
 void StartIMUTask(void *argument) {
+    int retry_count = 0;
+    HAL_StatusTypeDef imu_status;
+
     IMU_Data_t imu_data;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = pdMS_TO_TICKS(IMU_TASK_PERIOD_MS);
   
     for (;;) {
       if (osMutexAcquire(i2cMutexHandle, osWaitForever) == osOK){
-          if (IMU_Read(&imu_data) != HAL_OK) {
+          do {
+              imu_status = IMU_Read(&imu_data);  // Your function
+              if (imu_status == HAL_OK) break;
+              retry_count++;
+          } while (retry_count < MAX_RETRY);
+
+          if (imu_status != HAL_OK) {
               Handle_Error("IMU", "Failed to read IMU data");
+              osThreadSuspend(NULL);  // Suspend task to avoid corrupted loop
+              NVIC_SystemReset() // software reset (soft wdt)
           }
           else {
               osMessageQueuePut(imuQueueHandle, &imu_data, 0, 0);
@@ -127,16 +138,26 @@ void StartIMUTask(void *argument) {
     }
 }
 
-/* PPG Task Initializer ------------------------------------------------------*/
+/* PPG Task Initializer */
 void StartPPGTask(void *argument) {
+    int retry_count = 0;
+    HAL_StatusTypeDef ppg_status;
+
     PPG_Data_t ppg_data;
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = pdMS_TO_TICKS(PPG_TASK_PERIOD_MS);
   
     for (;;) {
       if (osMutexAcquire(i2cMutexHandle, osWaitForever) == osOK) {
-          if (PPG_Read(&ppg_data) != HAL_OK) {
+          do {
+            ppg_status = PPG_Read(&ppg_data);  // Your function
+            if (ppg_status == HAL_OK) break;
+            retry_count++;
+          } while (retry_count < MAX_RETRY);
+          if (ppg_status != HAL_OK) {
               Handle_Error("PPG", "Failed to read PPG data");
+              osThreadSuspend(NULL);  // Suspend task to avoid corrupted loop
+              NVIC_SystemReset() // software reset (soft wdt)
           } else {
               osMessageQueuePut(ppgQueueHandle, &ppg_data, 0, 0);
           }
@@ -150,8 +171,9 @@ void StartPPGTask(void *argument) {
     }
 }
 
-/* BLE Task Initializer -------------------------------------------------------*/
+/* BLE Task Initializer */
 void StartBLETask(const char *argument) {
+
     for (;;) {
         if (ble_connected && command_available) {
             BLE_ProcessCommand(last_received_command);  // Process the received command
@@ -165,8 +187,11 @@ void StartBLETask(const char *argument) {
     }
 }
 
-/* Flash Task Initializer -------------------------------------------------------*/
+/* Flash Task Initializer */
 void StartFlashTask(void *argument) {
+      int retry_count = 0;
+      HAL_StatusTypeDef flash_status;
+
       IMU_Data_t imu_data;
       PPG_Data_t ppg_data1, ppg_data2;
       SensorData_t sensor_data;
@@ -197,8 +222,15 @@ void StartFlashTask(void *argument) {
                   sensor_data.ppg_ir2 = ppg_data2.ir;
           
                   // Write to flash
-                  if (!Flash_WriteData(&sensor_data)) {
+                  do {
+                    flash_status = Flash_WriteData(&sensor_data);  // Your function
+                    if (flash_status == HAL_OK) break;
+                    retry_count++;
+                  } while (retry_count < MAX_RETRY);
+                  if (!flash_status) {
                       Handle_Error("Flash", "Failed to write sensor data");
+                      osThreadSuspend(NULL);  // Suspend task to avoid corrupted loop
+                      NVIC_SystemReset() // software reset (soft wdt)
                   }
               }
           }

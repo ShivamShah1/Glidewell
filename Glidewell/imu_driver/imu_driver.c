@@ -14,8 +14,7 @@ bool IMU_Init(I2C_HandleTypeDef *hi2c)
 {
     imu_i2c = hi2c;
 
-    // Wake up the MPU6050
-    uint8_t data[2] = {MPU6050_REG_PWR_MGMT_1, 0x00};
+    uint8_t data[2] = {MPU6050_REG_PWR_MGMT_1, 0x00}; // Wake up the MPU6050
     if (HAL_I2C_Master_Transmit(imu_i2c, MPU6050_ADDR, data, 2, HAL_MAX_DELAY) != HAL_OK)
         return false;
 

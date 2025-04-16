@@ -20,8 +20,7 @@ void Handle_Error(const char *source, const char *message) {
     snprintf(buffer, sizeof(buffer), "[ERROR] Source: %s | Message: %s\r\n", source, message);
     HAL_UART_Transmit(&huart2, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
 
-    // Clear LEDs before setting a new pattern
-    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_PIN, GPIO_PIN_RESET); // Clear LEDs before setting a new pattern
     HAL_GPIO_WritePin(LED2_GPIO_PORT, LED2_PIN, GPIO_PIN_RESET);
 
     if (strcmp(source, "IMU") == 0) {

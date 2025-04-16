@@ -30,6 +30,8 @@ extern "C" {
 
 #define WDT_TIMEOUT_MS 1000 // 1 second timeout
 
+#define MAX_RETRY 3 // 3 attempts/retry
+
 #define MAX_BLE_COMMAND_LEN 64
 char last_received_command[MAX_BLE_COMMAND_LEN] = {0};
 volatile bool command_available = false;  // Flag to track if a new command was received

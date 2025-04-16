@@ -5,17 +5,17 @@ volatile bool logging_enabled = false;
 
 static uint8_t ble_tx_buffer[256];
 
-// Called by the BLE stack when a connection is established
+/* this is called by cmsis os when the BLE stack when a connection is established */
 void BLE_ConnectedCallback(void) {
     ble_connected = true;
 }
 
-// Called by the BLE stack when a disconnection occurs
+/* this is called by cmsis os when the BLE stack when a disconnection occurs */
 void BLE_DisconnectedCallback(void) {
     ble_connected = false;
 }
 
-// Called when a write request is received from BLE central
+/* this is called by cmsis os when a request is received from BLE central */
 void Custom_APP_Notification(Custom_App_Notification_evt_t *pNotification)
 {
     switch(pNotification->EvtOpcode) {
@@ -29,24 +29,44 @@ void Custom_APP_Notification(Custom_App_Notification_evt_t *pNotification)
     }
 }
 
+/* To initialize the ble at the start of the board */
 void BLE_Init(void)
-{
-    // This initializes everything related to BLE, including HCI, GATT, GAP, and custom services
-    APP_BLE_Init();  // Called only once during system init (in main.c or system init)
+{   
+    int retry_count = 0;
+    HAL_StatusTypeDef ble_status;
+
+    do {
+        ble_status = APP_BLE_Init();  // This initializes everything related to BLE, including HCI, GATT, GAP, and custom services
+        if (ble_status == HAL_OK) break;
+        retry_count++;
+    } while (retry_count < MAX_RETRY);
+    if(ble_status!=HAL_OK){
+        Handle_Error("BLE", "Failed to init ble");
+        osThreadSuspend(NULL);  // Suspend task to avoid corrupted loop
+        NVIC_SystemReset() // software reset (soft wdt)
+    }
 }
 
+/* to check the ble status */
 bool BLE_status(void) {
     return ble_connected;
 }
 
+/* to communicate through ble */
 void BLE_Gatt(const char* msg)
 {
     uint16_t len = strlen(msg);
     if (len > sizeof(ble_tx_buffer)) len = sizeof(ble_tx_buffer);
     memcpy(ble_tx_buffer, msg, len);
-    Custom_STM_App_Update_Char(CUSTOM_STM_NOTIFY_CHAR_UUID, ble_tx_buffer);
+    // this is used when we want to send the data through the ble to central
+    if(Custom_STM_App_Update_Char(CUSTOM_STM_NOTIFY_CHAR_UUID, ble_tx_buffer) != HAL_OK){
+        Handle_Error("BLE", "Failed to init ble");
+        osThreadSuspend(NULL);  // Suspend task to avoid corrupted loop
+        NVIC_SystemReset() // software reset (soft wdt)
+    }
 }
 
+/* process the user cmd */
 void BLE_ProcessCommand(const char *cmd)
 {
     if (strstr(cmd, BLE_CMD_START_LOGGING)) {
