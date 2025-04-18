@@ -89,7 +89,7 @@ void RTC_Init(void) {
     hrtc.Init.SynchPrediv = 255;
     hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
     if (HAL_RTC_Init(&hrtc) != HAL_OK) {
-        Error_Handler();
+        Handle_Error("RTC", "Failed to initialize RTC");
     }
 
     // Set default time/date only once (or when flash is erased)

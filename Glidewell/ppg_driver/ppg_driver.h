@@ -11,6 +11,8 @@
 /* I2C address for MAX30102 */
 #define MAX30102_ADDR  (0x57 << 1)  // 7-bit address + HAL shift
 
+#define PPG_I2C_TIMEOUT 5  // Timeout in ms (adjust this based on your system's needs)
+
 typedef struct {
     uint32_t red;
     uint32_t ir;

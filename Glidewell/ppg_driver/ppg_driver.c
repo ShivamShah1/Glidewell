@@ -7,17 +7,17 @@ static I2C_HandleTypeDef *ppg_i2c = NULL;
 static bool MAX30102_WriteReg(uint8_t reg, uint8_t value)
 {
     uint8_t data[2] = {reg, value};
-    return HAL_I2C_Master_Transmit(ppg_i2c, MAX30102_ADDR, data, 2, HAL_MAX_DELAY) == HAL_OK;
+    return HAL_I2C_Master_Transmit(ppg_i2c, MAX30102_ADDR, data, 2, PPG_I2C_TIMEOUT) == HAL_OK;
 }
 
 /* reading from the sensor */
 static bool MAX30102_ReadFIFO(uint8_t *buffer, uint8_t length)
 {
     uint8_t reg = 0x07;  // FIFO_DATA register
-    if (HAL_I2C_Master_Transmit(ppg_i2c, MAX30102_ADDR, &reg, 1, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Transmit(ppg_i2c, MAX30102_ADDR, &reg, 1, PPG_I2C_TIMEOUT) != HAL_OK)
         return false;
 
-    return HAL_I2C_Master_Receive(ppg_i2c, MAX30102_ADDR, buffer, length, HAL_MAX_DELAY) == HAL_OK;
+    return HAL_I2C_Master_Receive(ppg_i2c, MAX30102_ADDR, buffer, length, PPG_I2C_TIMEOUT) == HAL_OK;
 }
 
 /* initializing the sensor */

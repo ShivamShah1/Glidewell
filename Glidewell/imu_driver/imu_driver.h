@@ -25,6 +25,8 @@ typedef struct {
 #define MPU6050_REG_ACCEL_XOUT_H 0x3B
 #define MPU6050_REG_GYRO_XOUT_H  0x43
 
+#define IMU_I2C_TIMEOUT 10  // Timeout in ms
+
 /* IMU Functions */
 bool IMU_Init(I2C_HandleTypeDef *hi2c);
 bool IMU_Read(IMU_Data_t *data);

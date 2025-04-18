@@ -15,7 +15,7 @@ bool IMU_Init(I2C_HandleTypeDef *hi2c)
     imu_i2c = hi2c;
 
     uint8_t data[2] = {MPU6050_REG_PWR_MGMT_1, 0x00}; // Wake up the MPU6050
-    if (HAL_I2C_Master_Transmit(imu_i2c, MPU6050_ADDR, data, 2, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Transmit(imu_i2c, MPU6050_ADDR, data, 2, IMU_I2C_TIMEOUT) != HAL_OK)
         return false;
 
     HAL_Delay(100); // Let IMU stabilize
@@ -29,10 +29,10 @@ bool IMU_Read(IMU_Data_t *data)
     uint8_t reg = MPU6050_REG_ACCEL_XOUT_H;
 
     // Read 14 bytes: Accel (6), Temp (2), Gyro (6)
-    if (HAL_I2C_Master_Transmit(imu_i2c, MPU6050_ADDR, &reg, 1, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Transmit(imu_i2c, MPU6050_ADDR, &reg, 1, IMU_I2C_TIMEOUT) != HAL_OK)
         return false;
 
-    if (HAL_I2C_Master_Receive(imu_i2c, MPU6050_ADDR, raw_data, 14, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Receive(imu_i2c, MPU6050_ADDR, raw_data, 14, IMU_I2C_TIMEOUT) != HAL_OK)
         return false;
 
     // Convert accelerometer data
