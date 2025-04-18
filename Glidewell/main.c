@@ -172,10 +172,10 @@ void StartPPGTask(void *argument) {
 }
 
 /* BLE Task Initializer */
-void StartBLETask(const char *argument) {
+void StartBLETask(void *argument) {
 
     for (;;) {
-        if (ble_connected && command_available) {
+        if (BLE_status() && command_available) {
             BLE_ProcessCommand(last_received_command);  // Process the received command
             command_available = false;  // Clear the flag
         }
@@ -234,7 +234,7 @@ void StartFlashTask(void *argument) {
                   }
               }
           }
-          osDelay(1);
+          osDelay(25);
           }
   
           // Reset the watchdog timer to prevent system reset

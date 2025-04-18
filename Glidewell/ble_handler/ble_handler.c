@@ -2,6 +2,9 @@
 
 volatile bool ble_connected = false;
 volatile bool logging_enabled = false;
+extern bool command_available;
+
+extern char last_received_command[MAX_BLE_COMMAND_LEN];
 
 static uint8_t ble_tx_buffer[256];
 

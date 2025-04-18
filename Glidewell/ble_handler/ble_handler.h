@@ -16,6 +16,7 @@
 #include <stdbool.h>
 
 #define MAX_RETRY 3 // 3 attempts/retry
+#define MAX_BLE_COMMAND_LEN 64
 
 /* BLE Commands */
 #define BLE_CMD_START_LOGGING    "START_LOG"
